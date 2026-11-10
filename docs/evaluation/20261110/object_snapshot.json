@@ -1,0 +1,119 @@
+{
+  "date": "2026-11-10",
+  "kind": "single_saved_frame_smoke_and_timing_not_accuracy_benchmark",
+  "input": {
+    "name": "object_distance_capture.npz",
+    "sha256": "4524bcc6830ad3b18600f8a532dd353bb6d2eeafe9a428109625e010727359f6",
+    "rgb_shape": [
+      480,
+      640,
+      3
+    ],
+    "skew_ms": 2,
+    "depth_points": "Previously SDK-projected Kinect points, not remapped during this replay"
+  },
+  "model": {
+    "name": "yolo11s.pt",
+    "sha256": "85a76fe86dd8afe384648546b56a7a78580c7cb7b404fc595f97969322d502d5"
+  },
+  "environment": {
+    "python": "3.10.22",
+    "torch": "2.2.2+cpu",
+    "ultralytics": "8.3.40",
+    "device": "cpu",
+    "threads": 2
+  },
+  "config": {
+    "confidence": 0.45,
+    "iou": 0.45,
+    "image_size": 960,
+    "max_results": 3,
+    "cpu_threads": 2
+  },
+  "load_ms": 59.65,
+  "timing": {
+    "warmup_runs": 1,
+    "measured_runs": 5,
+    "predict_call_ms": [
+      214.64,
+      213.93,
+      218.71,
+      213.94,
+      232.14
+    ],
+    "median_ms": 214.64,
+    "min_ms": 213.93,
+    "max_ms": 232.14,
+    "scope": "detect() including preprocess/inference/postprocess; excludes camera, SDK mapping and speech"
+  },
+  "result": {
+    "target_label": "Chai nước",
+    "regions": [
+      {
+        "text": "Chai nước",
+        "accepted": true,
+        "confidence": 0.6772905588150024,
+        "clock_hour": null,
+        "direction": "CENTER",
+        "box": [
+          [
+            276.4162902832031,
+            191.1119384765625
+          ],
+          [
+            311.20697021484375,
+            191.1119384765625
+          ],
+          [
+            311.20697021484375,
+            285.8450012207031
+          ],
+          [
+            276.4162902832031,
+            285.8450012207031
+          ]
+        ],
+        "depth": {
+          "status": "ok",
+          "distance_m": 1.083,
+          "samples": 142,
+          "method": "object_center",
+          "roi": [
+            [
+              285.11395263671875,
+              214.79519653320312
+            ],
+            [
+              302.5093078613281,
+              214.79519653320312
+            ],
+            [
+              302.5093078613281,
+              262.1617431640625
+            ],
+            [
+              285.11395263671875,
+              262.1617431640625
+            ]
+          ]
+        },
+        "preferred": true
+      }
+    ],
+    "text": "Trong ảnh vừa chụp: Tìm thấy chai nước ở chính giữa khung nhìn, khoảng cách ước tính 1.1 mét.",
+    "truncated": false,
+    "status": "ok",
+    "max_results": 3,
+    "candidate_limit_reached": false,
+    "speak": "Trong ảnh vừa chụp: Tìm thấy chai nước ở chính giữa khung nhìn, khoảng cách ước tính 1.1 mét.",
+    "detected_count": 1,
+    "unmeasured_count": 0,
+    "selection": "nearest_measured"
+  },
+  "speech_text": "Trong ảnh vừa chụp: Tìm thấy chai nước ở chính giữa khung nhìn, khoảng cách ước tính 1.1 mét.",
+  "limitations": [
+    "No labelled detection dataset: mAP/precision/recall unavailable.",
+    "No tape-measure reference: distance error unavailable.",
+    "One image repeated five times is not five independent test scenes."
+  ]
+}

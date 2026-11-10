@@ -1,0 +1,62 @@
+{
+  "target_label": "Chai nước",
+  "regions": [
+    {
+      "text": "Chai nước",
+      "accepted": true,
+      "confidence": 0.7778721451759338,
+      "clock_hour": 10,
+      "direction": "CENTER",
+      "box": [
+        [
+          208.6656494140625,
+          180.1410675048828
+        ],
+        [
+          236.3577423095703,
+          180.1410675048828
+        ],
+        [
+          236.3577423095703,
+          254.3017120361328
+        ],
+        [
+          208.6656494140625,
+          254.3017120361328
+        ]
+      ],
+      "depth": {
+        "status": "ok",
+        "distance_m": 1.35,
+        "samples": 96,
+        "method": "object_center",
+        "roi": [
+          [
+            215.5886688232422,
+            198.6812286376953
+          ],
+          [
+            229.43472290039062,
+            198.6812286376953
+          ],
+          [
+            229.43472290039062,
+            235.7615509033203
+          ],
+          [
+            215.5886688232422,
+            235.7615509033203
+          ]
+        ]
+      }
+    }
+  ],
+  "text": "Trong ảnh vừa chụp: Tìm thấy chai nước ở hướng 10 giờ, khoảng cách ước tính 1.4 mét.",
+  "truncated": false,
+  "status": "ok",
+  "speak": "Trong ảnh vừa chụp: Tìm thấy chai nước ở hướng 10 giờ, khoảng cách ước tính 1.4 mét.",
+  "request_id": "41e76c577f37454ebe4ac91849a14dc8",
+  "rgbd_status": "mapped",
+  "rgbd_skew_ms": 2,
+  "total_ms": 4468
+}

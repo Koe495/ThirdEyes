@@ -1,0 +1,62 @@
+{
+  "samples": [
+    {
+      "image": "ocr_sample.png",
+      "source": "synthetic_fixture",
+      "status": "ok",
+      "text": "XIN CHÀO\nĐây là hệ thống ThirdEyes\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng",
+      "process_ms": 2174,
+      "char_errors": 2,
+      "reference_chars": 80,
+      "word_errors": 2,
+      "reference_words": 15,
+      "cer": 0.025,
+      "wer": 0.13333333333333333,
+      "unexpected_text": false
+    },
+    {
+      "image": "ocr_tilted.png",
+      "source": "synthetic_fixture",
+      "status": "ok",
+      "text": "XIN CHÀO\nĐây là hệ thống ThirdEyes\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng",
+      "process_ms": 1523,
+      "char_errors": 2,
+      "reference_chars": 80,
+      "word_errors": 2,
+      "reference_words": 15,
+      "cer": 0.025,
+      "wer": 0.13333333333333333,
+      "unexpected_text": false
+    },
+    {
+      "image": "ocr_blank.png",
+      "source": "synthetic_blank",
+      "status": "blurry",
+      "text": "",
+      "process_ms": 2,
+      "char_errors": 0,
+      "reference_chars": 0,
+      "word_errors": 0,
+      "reference_words": 0,
+      "cer": null,
+      "wer": null,
+      "unexpected_text": false
+    },
+    {
+      "image": "kinect_text_crop.png",
+      "source": "real_kinect_manual_crop_two_lines_only",
+      "status": "blurry",
+      "text": "",
+      "process_ms": 0,
+      "char_errors": 45,
+      "reference_chars": 45,
+      "word_errors": 8,
+      "reference_words": 8,
+      "cer": 1.0,
+      "wer": 1.0,
+      "unexpected_text": false
+    }
+  ],
+  "cer": 0.23902439024390243,
+  "wer": 0.3157894736842105
+}

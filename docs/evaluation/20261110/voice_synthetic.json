@@ -1,0 +1,138 @@
+[
+  {
+    "spoken": "tìm chai nước",
+    "recognized": {
+      "result": [
+        {
+          "conf": 1.0,
+          "end": 0.21,
+          "start": 0.03,
+          "word": "tìm"
+        },
+        {
+          "conf": 0.973201,
+          "end": 0.39,
+          "start": 0.21,
+          "word": "chai"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.63,
+          "start": 0.419196,
+          "word": "nước"
+        }
+      ],
+      "text": "tìm chai nước"
+    },
+    "action": [
+      "find",
+      "Chai nước"
+    ],
+    "passed": true
+  },
+  {
+    "spoken": "tìm điện thoại",
+    "recognized": {
+      "result": [
+        {
+          "conf": 0.985006,
+          "end": 0.186864,
+          "start": 0.03,
+          "word": "tìm"
+        },
+        {
+          "conf": 0.848852,
+          "end": 0.33,
+          "start": 0.186864,
+          "word": "điện"
+        },
+        {
+          "conf": 0.993655,
+          "end": 0.51,
+          "start": 0.33,
+          "word": "thoại"
+        }
+      ],
+      "text": "tìm điện thoại"
+    },
+    "action": [
+      "find",
+      "Điện thoại"
+    ],
+    "passed": true
+  },
+  {
+    "spoken": "tìm cái ghế",
+    "recognized": {
+      "result": [
+        {
+          "conf": 1.0,
+          "end": 0.18,
+          "start": 0.03,
+          "word": "tìm"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.39,
+          "start": 0.18,
+          "word": "cái"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.72,
+          "start": 0.39,
+          "word": "ghế"
+        }
+      ],
+      "text": "tìm cái ghế"
+    },
+    "action": [
+      "find",
+      "Ghế"
+    ],
+    "passed": true
+  },
+  {
+    "spoken": "tìm máy tính xách tay",
+    "recognized": {
+      "result": [
+        {
+          "conf": 0.97186,
+          "end": 0.18,
+          "start": 0.0,
+          "word": "tìm"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.39,
+          "start": 0.18,
+          "word": "máy"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.57,
+          "start": 0.39,
+          "word": "tính"
+        },
+        {
+          "conf": 1.0,
+          "end": 0.75,
+          "start": 0.57,
+          "word": "xách"
+        },
+        {
+          "conf": 0.955918,
+          "end": 1.02,
+          "start": 0.75,
+          "word": "tay"
+        }
+      ],
+      "text": "tìm máy tính xách tay"
+    },
+    "action": [
+      "find",
+      "Laptop"
+    ],
+    "passed": true
+  }
+]
