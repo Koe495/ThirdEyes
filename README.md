@@ -1,6 +1,10 @@
+# Cập nhật hoàn thiện 10/11/2026
+
+Đã bổ sung Piper tiếng Việt ngoại tuyến, Vosk nhận lệnh (V), bảng điều khiển nút lớn, ghép timestamp/ánh xạ RGB-depth và công cụ đánh giá. Xem docs/COMPLETION_20261110.md cho hướng dẫn hiện hành và giới hạn kiểm chứng. Thông tin chỉ có giọng SAPI tiếng Anh bên dưới là ghi nhận của phiên bản trước; bản hiện tại ưu tiên Piper đã cài.
+
 # ThirdEyes — camera, cảnh báo vật cản và đọc văn bản ngoại tuyến
 
-Project: `E:\ThirdEyes`. Kinect for Windows model 1517, SDK/Runtime 1.8.
+Project: `E:\DeepLearning\ThirdEyes`. Kinect for Windows model 1517, SDK/Runtime 1.8.
 
 
 ## Cập nhật 10/11/2026
@@ -36,7 +40,7 @@ Nếu cài lại: `setup.bat` cho phần chính, `setup_ocr.bat` cho OCR. **Bư�
 ## Các lệnh
 
 ```powershell
-cd E:\ThirdEyes
+cd E:\DeepLearning\ThirdEyes
 # Demo vật cản
 .\.venv\Scripts\python.exe main.py --demo
 
@@ -89,3 +93,7 @@ OCR thực tế mất vài giây trên CPU. Lần đầu cần nạp model nên 
 ## Âm báo stereo theo hướng
 
 Mặc định: vật cản trái phát tai trái, phải phát tai phải, phía trước phát đều hai tai. Nhiều hướng phát lần lượt theo mức nguy cơ/khoảng cách. Bấm **T** hoặc chạy `test_stereo.bat` để thử **trái → giữa → phải**. Dùng tai nghe stereo, tắt Mono audio trong Windows. Xem `docs/STEREO_AUDIO.md` để chỉnh âm lượng/đảo kênh và biết giới hạn.
+
+## Tìm vật đã triển khai
+Chọn vật trên bảng điều khiển và bấm F. Model mặc định YOLO11s; đọc hướng và khoảng cách khi đo được. Bút cần model custom. Xem docs/OBJECT_FINDING.md. Thông tin ObjectFinder là placeholder ở các phần lịch sử phía trên đã được thay thế.
+

@@ -62,6 +62,9 @@ def load_runtime():
         "NuiImageStreamOpen": ([ct.c_int32, ct.c_int32, DWORD, DWORD, HANDLE, ct.POINTER(HANDLE)], HRESULT),
         "NuiImageStreamGetNextFrame": ([HANDLE, DWORD, ct.POINTER(ct.POINTER(ImageFrame))], HRESULT),
         "NuiImageStreamReleaseFrame": ([HANDLE, ct.POINTER(ImageFrame)], HRESULT),
+        "NuiImageGetColorPixelCoordinatesFromDepthPixelAtResolution": (
+            [ct.c_int32, ct.c_int32, ct.POINTER(ViewArea), ct.c_int32, ct.c_int32,
+             ct.c_uint16, ct.POINTER(ct.c_int32), ct.POINTER(ct.c_int32)], HRESULT),
     }
     for name, (arguments, result) in signatures.items():
         func = getattr(dll, name)

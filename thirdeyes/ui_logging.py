@@ -53,6 +53,11 @@ def render(frames: FrameBundle, demo: bool, now: float, report: ObstacleReport |
     cv2.putText(canvas, "Depth: warm=near, cool=far, black=invalid/out of range | RGB/depth are NOT aligned",
                 (16, 578), cv2.FONT_HERSHEY_SIMPLEX, .55, (190, 190, 190), 1, cv2.LINE_AA)
     if report is not None:
+        for track in report.tracks:
+            x0, y0, x1, y1 = track.bounds
+            cv2.rectangle(canvas, (640 + x0, 45 + y0), (640 + x1, 45 + y1), (255, 220, 120), 1)
+            cv2.putText(canvas, f'#{track.track_id}', (642 + x0, 60 + y0),
+                        cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 220, 120), 1)
         audio_state = "OFF" if audio is None else ("MUTED" if audio.muted else "ON")
         if audio is not None and audio.player.error:
             audio_state = "ERROR - check log / speakers"

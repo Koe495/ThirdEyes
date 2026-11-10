@@ -64,6 +64,7 @@ class ObstacleReport:
     status: str
     zones: tuple[ZoneRisk, ...]
     roi: tuple[int, int, int, int] | None
+    tracks: tuple = ()  # geometric patches only; IDs do not affect warning policy
 
 
 @dataclass(frozen=True)

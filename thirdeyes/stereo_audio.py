@@ -7,7 +7,7 @@ import wave
 import numpy as np
 
 SAMPLE_RATE = 44100
-TONES = {"near": (1000, .100), "urgent": (1600, .150),
+TONES = {"near": (1000, .100), "urgent": (1600, .150), "listen": (700, .060),
          "depth_unavailable": (500, .100), "test": (1000, .100)}
 GAINS = {"LEFT": (1., 0.), "CENTER": (2 ** -.5, 2 ** -.5), "RIGHT": (0., 1.)}
 

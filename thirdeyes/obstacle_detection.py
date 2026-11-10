@@ -12,6 +12,7 @@ from thirdeyes.config import ObstacleConfig
 from thirdeyes.boundary_motion import BoundaryMotionGuard
 from thirdeyes.contracts import DepthObservation, ObstacleReport, ZoneRisk
 from thirdeyes.depth_processing import ZONES
+from thirdeyes.obstacle_tracking import PatchTracker
 
 
 @dataclass
@@ -31,6 +32,7 @@ class ObstacleDetector:
         self.states = {z: _State() for z in ZONES}
         self.last_time = None
         self.cached = ObstacleReport("waiting", (), None)
+        self.tracker = PatchTracker()
 
     def _speed(self, index: int, timestamp: float, distance: float | None) -> float:
         if distance is None:
@@ -60,6 +62,7 @@ class ObstacleDetector:
     def process(self, observation: DepthObservation) -> ObstacleReport:
         cfg = self.config
         if observation.status in {"stale", "waiting"}:
+            self.tracker = PatchTracker()
             self.histories.clear()
             self.boundary_guard.reset()
             self.last_time = None
@@ -132,5 +135,6 @@ class ObstacleDetector:
             reported_distance = risk_distance if desired else distance
             zones.append(ZoneRisk(zone, state.level, known, reported_distance, speed, ttc,
                                   display_reason, approaching, suppressed))
-        self.cached = ObstacleReport(observation.status, tuple(zones), observation.roi)
+        tracks = self.tracker.update(observation.cells, timestamp)
+        self.cached = ObstacleReport(observation.status, tuple(zones), observation.roi, tracks)
         return self.cached

@@ -1,0 +1,22 @@
+[
+  {
+    "image": "ocr_sample.png",
+    "expected": "XIN CHÀO\nĐây là hệ thống ThirdEyes.\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng.",
+    "source": "synthetic_fixture"
+  },
+  {
+    "image": "ocr_tilted.png",
+    "expected": "XIN CHÀO\nĐây là hệ thống ThirdEyes.\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng.",
+    "source": "synthetic_fixture"
+  },
+  {
+    "image": "ocr_blank.png",
+    "expected": "",
+    "source": "synthetic_blank"
+  },
+  {
+    "image": "kinect_text_crop.png",
+    "expected": "TRƯỜNG ĐẠI HỌC NHA TRANG\nNHA TRANG UNIVERSITY",
+    "source": "real_kinect_manual_crop_two_lines_only"
+  }
+]

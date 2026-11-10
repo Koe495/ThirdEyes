@@ -38,6 +38,10 @@ def read_settings(path):
 class TextReader:
     def __init__(self, root=ROOT, python_path=None, models=None):
         self.root = Path(root)
+        self.worker_script = 'worker.py'
+        self.worker_config = self.root / 'config/ocr.json'
+        self.request_payload = {}
+        self.log_name = 'ocr_worker.log'
         self.python = Path(python_path) if python_path else self.root / ".ocr-venv/Scripts/python.exe"
         self.models = Path(models) if models else self.root / "models/ocr"
         try:
@@ -63,7 +67,7 @@ class TextReader:
     def busy(self):
         return self._thread is not None and self._thread.is_alive()
 
-    def request(self, frames: FrameBundle, now=None):
+    def request(self, frames: FrameBundle, now=None, pair=None, mapper=None):
         now = time.monotonic() if now is None else now
         if self._closed or self.busy or self.settings is None:
             return False
@@ -86,7 +90,7 @@ class TextReader:
             self._results.get_nowait()
         self.status, self.message = "working", "Dang doc anh chup; canh bao vat can van hoat dong"
         captured_at = time.time() - max(0., now - frames.color_received_at)
-        self._thread = threading.Thread(target=self._perform, args=(self.snapshot_rgb, captured_at, self._cancel),
+        self._thread = threading.Thread(target=self._perform, args=(self.snapshot_rgb, captured_at, self._cancel, pair, mapper),
                                         name="ThirdEyes-OCR", daemon=True)
         self._thread.start()
         return True
@@ -101,13 +105,13 @@ class TextReader:
                 log_dir = self.root / "logs"
                 log_dir.mkdir(exist_ok=True)
                 # A fresh process overwrites its diagnostic log; OCR contents are not logged.
-                self._log = (log_dir / "ocr_worker.log").open("w", encoding="utf-8")
+                self._log = (log_dir / self.log_name).open("w", encoding="utf-8")
                 env = os.environ.copy()
                 env.update(PYTHONUTF8="1", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2", HF_HUB_OFFLINE="1")
                 flags = (subprocess.CREATE_NO_WINDOW | subprocess.BELOW_NORMAL_PRIORITY_CLASS) if os.name == "nt" else 0
                 self._process = subprocess.Popen(
-                    [str(self.python), str(self.root / "ocr_runtime/worker.py"), "--models", str(self.models),
-                     "--config", str(self.root / "config/ocr.json")], stdin=subprocess.PIPE,
+                    [str(self.python), str(self.root / 'ocr_runtime' / self.worker_script), "--models", str(self.models),
+                     "--config", str(self.worker_config)], stdin=subprocess.PIPE,
                     stdout=self._log, stderr=self._log, text=True, encoding="utf-8", env=env,
                     creationflags=flags, cwd=self.root)
             return self._process
@@ -129,7 +133,10 @@ class TextReader:
                 self._log.close()
                 self._log = None
 
-    def _perform(self, rgb, captured_at, cancelled):
+    def annotate_regions(self, mapper, pair, regions, cancelled):
+        mapper.annotate(pair, regions, cancelled)
+
+    def _perform(self, rgb, captured_at, cancelled, pair=None, mapper=None):
         started = time.monotonic()
         result = None
         jobs = self.root / "runtime/ocr_jobs"
@@ -146,6 +153,7 @@ class TextReader:
                     return
                 request_id = uuid.uuid4().hex
                 request = {"id": request_id, "image": str(image), "output": str(output), "timestamp": captured_at}
+                request.update(self.request_payload)
                 proc.stdin.write(json.dumps(request) + "\n")
                 proc.stdin.flush()
                 while not cancelled.wait(.025):
@@ -165,6 +173,17 @@ class TextReader:
         if cancelled.is_set() or self._closed:
             return
         if result is not None:
+            result['rgbd_status'] = 'unpaired' if pair is None else 'paired'
+            result['rgbd_skew_ms'] = None if pair is None else pair.skew_ms
+            if pair is not None and mapper is not None and result.get('regions'):
+                try:
+                    self.annotate_regions(mapper, pair, result['regions'], cancelled)
+                    result['rgbd_status'] = 'mapped'
+                except Exception as exc:
+                    result['rgbd_status'] = 'mapping_error'
+                    logging.warning('RGB-depth mapping: %s', exc)
+            if cancelled.is_set() or self._closed:
+                return
             result["total_ms"] = round((time.monotonic() - started) * 1000)
             self._results.put_nowait(result)
 

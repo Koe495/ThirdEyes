@@ -2,6 +2,7 @@
 setlocal
 cd /d "%~dp0"
 echo Setup downloads Python, libraries and model files once. OCR runtime is offline.
+if exist ".venv\Scripts\python.exe" ".venv\Scripts\python.exe" repair_environment.py
 if not exist ".setup-tools\Scripts\python.exe" (
     python -m venv .setup-tools
     if errorlevel 1 goto failed

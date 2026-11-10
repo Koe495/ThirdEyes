@@ -1,0 +1,10 @@
+# Replace path with the absolute path to your labelled dataset before training.
+path: E:/DeepLearning/ThirdEyes/datasets/objects
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: bottle
+  1: cell phone
+  2: chair
+  3: pen

@@ -1,11 +1,86 @@
-.venv/
-__pycache__/
-*.pyc
-logs/
-captures/
+# Python environments and downloaded runtimes
+/.venv/
+/.*-venv/
+/venv/
+/env/
+/.runtimes/
+/.setup-tools/
 
-.ocr-venv/
-.runtimes/
-.setup-tools/
-runtime/
-models/
+# Python bytecode, caches and build products
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+*.egg-info/
+/build/
+/dist/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Downloaded models and training checkpoints (use setup scripts)
+/models/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+*.pdparams
+*.pdiparams
+*.pdiparams.info
+*.pdmodel
+*.tflite
+
+# Raw datasets stay local; keep dataset definitions and instructions
+/datasets/**
+!/datasets/**/
+!/datasets/**/*.yaml
+!/datasets/**/*.yml
+!/datasets/**/*.md
+!/datasets/**/.gitkeep
+/datasets/**/*.cache
+
+# Captured RGB/depth/audio, worker jobs, evaluation and training output
+/runtime/
+/logs/
+/captures/
+/recordings/
+/runs/
+/outputs/
+/wandb/
+/mlruns/
+/backups/
+*.log
+*.tmp
+*.pending
+
+# Downloaded installers and archives
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+*.whl
+*.msi
+
+# Local credentials and machine-specific settings
+.env
+.env.*
+!.env.example
+/.idea/
+/.vscode/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+
+# Do not ignore all PNG/JPG/JSON/WAV/NPY files globally:
+# small test fixtures in tests/assets and source configs must remain trackable.

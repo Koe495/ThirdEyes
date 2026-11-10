@@ -10,6 +10,11 @@ class OfflineSpeech:
     def __init__(self, root, python_path=None):
         self.root = Path(root)
         self.python = Path(python_path) if python_path else self.root / ".ocr-venv/Scripts/python.exe"
+        self.command = [str(self.python), str(self.root / "ocr_runtime/speech_worker.py")]
+        model = self.root / 'models/speech/vi_VN-vais1000-medium.onnx'
+        audio_python = self.root / '.audio-venv/Scripts/python.exe'
+        if model.is_file() and audio_python.is_file():
+            self.command = [str(audio_python), str(self.root / 'ocr_runtime/piper_worker.py'), '--model', str(model)]
         self.state = "starting"
         self.message = "Dang kiem tra giong tieng Viet offline"
         self._process = None
@@ -24,7 +29,7 @@ class OfflineSpeech:
             with self._lock:
                 if self._closed:
                     return
-                self._process = subprocess.Popen([str(self.python), str(self.root / "ocr_runtime/speech_worker.py")],
+                self._process = subprocess.Popen(self.command,
                                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                                  text=True, encoding="utf-8", creationflags=flags,
                                                  env={**os.environ, "PYTHONUTF8": "1"})
