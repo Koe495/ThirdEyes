@@ -1,0 +1,10 @@
+{
+  "blur_threshold": 35.0,
+  "upscale": 2.0,
+  "min_confidence": 0.5,
+  "max_regions": 40,
+  "max_characters": 3000,
+  "frame_max_age_s": 1.0,
+  "timeout_s": 90.0,
+  "cpu_threads": 2
+}

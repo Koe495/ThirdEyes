@@ -1,0 +1,29 @@
+[
+  {
+    "image": "ocr_sample.png",
+    "status": "ok",
+    "text": "XIN CHÀO\nĐây là hệ thống ThirdEyes\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng",
+    "process_ms": 5147,
+    "total_ms": 20345,
+    "obstacle_iterations": 528,
+    "max_obstacle_step_ms": 26.3
+  },
+  {
+    "image": "ocr_tilted.png",
+    "status": "ok",
+    "text": "XIN CHÀO\nĐây là hệ thống ThirdEyes\nVui lòng giữ khoảng cách.\nGiá: 125.000 đồng",
+    "process_ms": 4518,
+    "total_ms": 4564,
+    "obstacle_iterations": 113,
+    "max_obstacle_step_ms": 26.3
+  },
+  {
+    "image": "ocr_blank.png",
+    "status": "blurry",
+    "text": "",
+    "process_ms": 3,
+    "total_ms": 48,
+    "obstacle_iterations": 2,
+    "max_obstacle_step_ms": 19.8
+  }
+]

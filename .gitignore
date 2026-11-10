@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+captures/
+
+.ocr-venv/
+.runtimes/
+.setup-tools/
+runtime/
+models/

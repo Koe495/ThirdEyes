@@ -1,0 +1,22 @@
+{
+  "det.tar": {
+    "url": "https://paddleocr.bj.bcebos.com/PP-OCRv3/english/en_PP-OCRv3_det_infer.tar",
+    "sha256": "e740eb522521827cc83da3ba33e1c70ccfd9b3cf7d9a24a420ce4ca5ebb8794f",
+    "bytes": 4003840
+  },
+  "vgg_transformer.pth": {
+    "url": "https://vocr.vn/data/vietocr/vgg_transformer.pth",
+    "sha256": "380512193a8b6cbf6fad80deacdc9b6939d10d473d199892fc6408d13775ea59",
+    "bytes": 151815373
+  },
+  "base.yml": {
+    "url": "https://raw.githubusercontent.com/pbcquoc/vietocr/master/config/base.yml",
+    "sha256": "9c8283fadb950f06f5d3400475f80d5355700ff315c9c48b7875e6ea66647d1c",
+    "bytes": 1809
+  },
+  "vgg-transformer.yml": {
+    "url": "https://raw.githubusercontent.com/pbcquoc/vietocr/master/config/vgg-transformer.yml",
+    "sha256": "0df9feee197754c7381871e5dfd07c6f3e292a4853eece6f1af240923e57c907",
+    "bytes": 505
+  }
+}
