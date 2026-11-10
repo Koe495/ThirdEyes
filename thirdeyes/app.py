@@ -143,11 +143,12 @@ def main(argv=None):
             audio.speech = OfflineSpeech(Path(__file__).resolve().parent.parent, args.ocr_python)
         started = time.monotonic()
         if not args.headless:
-            cv2.namedWindow(WINDOW, cv2.WINDOW_NORMAL)
-            cv2.resizeWindow(WINDOW, 1152, 702)
             if not args.no_controls:
                 panel = ControlPanel(demo=args.demo)
                 panel.target.set(args.find_target)
+            else:
+                cv2.namedWindow(WINDOW, cv2.WINDOW_NORMAL)
+                cv2.resizeWindow(WINDOW, 1152, 702)
         count = 0
         while True:
             frames = source.read()
@@ -187,13 +188,17 @@ def main(argv=None):
             if found is not None:
                 last_result_text = found['speak']
                 pending_found = (found['speak'], now)
-                if not args.headless:
+                if panel:
+                    panel.show_result(found, finder.snapshot_rgb)
+                elif not args.headless:
                     found_view.show(found, finder.snapshot_rgb)
                 logging.info('FIND status=%s target=%s count=%d ms=%s', found['status'], found.get('target_label'), len(found.get('regions', [])), found.get('total_ms'))
             if result is not None:
                 last_result_text = result.get('speak', '')
                 pending_found = (last_result_text, now)
-                if not args.headless:
+                if panel:
+                    panel.show_result(result, reader.snapshot_rgb)
+                elif not args.headless:
                     ocr_view.show(result, reader.snapshot_rgb)
             if pending_found and not voice.listening:
                 if now - pending_found[1] > 10 or audio.read_text(pending_found[0], now):
@@ -206,7 +211,6 @@ def main(argv=None):
             for name, received in (("RGB", frames.color_received_at), ("depth", frames.depth_received_at)):
                 if now - (received if received is not None else started) > args.timeout:
                     raise KinectError(f"Khong nhan duoc {name} trong {args.timeout:g}s. Kiem tra ket noi Kinect.")
-            display = render(frames, args.demo, now, report, audio, reader)
             actions = []
             command = voice.poll()
             if command:
@@ -220,19 +224,19 @@ def main(argv=None):
                 if voice_state == 'error':
                     logging.warning('Voice command input: %s', voice.message)
             if not args.headless:
-                cv2.imshow(WINDOW, display)
-                key = cv2.waitKey(1) & 0xFF
-                if key == 27 or cv2.getWindowProperty(WINDOW, cv2.WND_PROP_VISIBLE) < 1:
-                    actions.append('quit')
-                elif key != 255 and chr(key).lower() in KEYS:
-                    actions.append(KEYS[chr(key).lower()])
                 if panel:
-                    paired = f'RGB–depth lệch {pair.skew_ms} ms' if pair else 'Chưa có cặp RGB–depth phù hợp'
-                    panel.update(f'{paired}\nOCR: {reader.status} | Giọng: {audio.speech.state if audio.speech else "tắt"}\n'
-                                 f'Tìm vật: {finder.message[:110]}\nMicro: {voice.message}\n{describe_status(report, reader, audio)}')
+                    panel.present(frames, report, audio, reader, finder, voice, pair, now)
                     action = panel.poll()
                     if action:
                         actions.append(action)
+                else:
+                    display = render(frames, args.demo, now, report, audio, reader)
+                    cv2.imshow(WINDOW, display)
+                    key = cv2.waitKey(1) & 0xFF
+                    if key == 27 or cv2.getWindowProperty(WINDOW, cv2.WND_PROP_VISIBLE) < 1:
+                        actions.append('quit')
+                    elif key != 255 and chr(key).lower() in KEYS:
+                        actions.append(KEYS[chr(key).lower()])
                 ocr_view.pump()
                 found_view.pump()
             if 'quit' in actions:
