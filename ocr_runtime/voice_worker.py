@@ -5,6 +5,10 @@ import queue
 import sys
 import time
 
+# Only dependency-free catalog/grammar is imported into the audio environment.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from thirdeyes.voice_grammar import PHRASES
+
 
 def main():
     sys.stdout.reconfigure(encoding='utf-8')
@@ -21,8 +25,7 @@ def main():
             raise FileNotFoundError('Chưa có model Vosk. Chạy setup_audio.bat.')
         model = Model(str(path))
         rate = int(sd.query_devices(kind='input')['default_samplerate'])
-        phrases = ['đọc văn bản', 'đọc chữ', 'đọc lại', 'lặp lại', 'dừng đọc', 'dừng lại', 'trạng thái', 'kiểm tra', '[unk]']
-        recognizer = KaldiRecognizer(model, rate, json.dumps(phrases, ensure_ascii=False))
+        recognizer = KaldiRecognizer(model, rate, json.dumps(PHRASES, ensure_ascii=False))
         recognizer.SetWords(True)
         audio = queue.Queue(maxsize=40)
         overflow = []
@@ -37,7 +40,7 @@ def main():
 
         with sd.RawInputStream(samplerate=rate, channels=1, dtype='int16',
                                blocksize=int(rate * .1), callback=callback):
-            emit('listening', message='Đang nghe: đọc văn bản, đọc lại, dừng đọc, trạng thái.')
+            emit('listening', message='Đang nghe: tìm chai nước, tìm điện thoại, đọc văn bản, đọc lại, dừng lại, trạng thái.')
             deadline = time.monotonic() + 6
             while time.monotonic() < deadline:
                 if overflow:

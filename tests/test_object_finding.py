@@ -39,7 +39,8 @@ class ObjectTests(unittest.TestCase):
     def test_limit_results_and_clip_boxes(self):
         result = detect(model([[-10,-10,400,200,.8,39]] * 4), np.zeros((100,300,3)), 'bottle', 'Chai nước', CFG)
         self.assertTrue(result['truncated'])
-        self.assertEqual(len(result['regions']), 3)
+        # Keep every candidate for depth ranking; cap only in the parent.
+        self.assertEqual(len(result['regions']), 4)
         self.assertEqual(result['regions'][0]['box'][2], [299,99])
 
     def test_speech_only_uses_valid_depth(self):

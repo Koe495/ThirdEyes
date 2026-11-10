@@ -32,7 +32,7 @@ class ControlPanel:
             button.pack(fill='x', padx=25, pady=3)
             button.bind('<FocusIn>', lambda event, text=caption: self.events.put(('say', text)))
             self.buttons.append((button, caption))
-        self.text = tk.StringVar(value='Tab: chuyển nút. Enter hoặc Space: chọn.')
+        self.text = tk.StringVar(value='Bấm V, chờ tín hiệu rồi nói “tìm chai nước”. Tab: chuyển nút. Enter: chọn.')
         tk.Label(self.window, textvariable=self.text, fg='white', bg='#111111', wraplength=600,
                  justify='left', font=('Arial', 13)).pack(fill='x', padx=25, pady=10)
         self.window.bind_all('<Key>', self._key)

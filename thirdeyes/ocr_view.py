@@ -29,6 +29,8 @@ class OCRView:
         for i, region in enumerate(result.get('regions', []), 1):
             depth = region.get('depth', {})
             region_name = 'Vật' if 'target_label' in result else 'Vùng chữ'
+            if region.get('preferred'):
+                region_name += ' ưu tiên'
             if depth.get('status') == 'ok':
                 content += f"\n{region_name} {i}: khoảng {depth['distance_m']:.2f} m"
             elif depth:
@@ -57,6 +59,8 @@ class OCRView:
                 if 'clock_hour' in region:
                     hour = region['clock_hour']
                     label = f'{hour}h' if hour else 'CENTER'
+                    if region.get('preferred'):
+                        label = '* ' + label
                     depth = region.get('depth', {})
                     label += f" | {depth['distance_m']:.1f} m" if depth.get('status') == 'ok' else ' | depth ?'
                     x, y = points[0, 0]

@@ -33,7 +33,9 @@ def detect(model, image, target, label, settings):
                                imgsz=settings['image_size'], device='cpu', verbose=False, max_det=30)[0]
     rows = sorted(prediction.boxes.data.cpu().tolist(), key=lambda row: -row[4])
     h, w = image.shape[:2]
-    for x0, y0, x1, y1, confidence, category in rows[:settings['max_results']]:
+    # Retain candidates until calibrated depth is measured in the parent.
+    # Confidence-only top three can exclude the closest object.
+    for x0, y0, x1, y1, confidence, category in rows[:30]:
         x0, x1 = max(0., min(w - 1., x0)), max(0., min(w - 1., x1))
         y0, y1 = max(0., min(h - 1., y0)), max(0., min(h - 1., y1))
         if x1 <= x0 or y1 <= y0:
@@ -44,6 +46,7 @@ def detect(model, image, target, label, settings):
             'clock_hour': clock_direction((x0, y0, x1, y1), w, h),
             'direction': direction, 'box': [[x0,y0],[x1,y0],[x1,y1],[x0,y1]]})
     return {**base, 'status': 'ok' if base['regions'] else 'not_found',
+            'max_results': settings['max_results'], 'candidate_limit_reached': len(rows) >= 30,
             'truncated': len(rows) > settings['max_results'],
             'speak': f'Chưa thấy {label.lower()} trong ảnh. Hãy đổi góc camera và thử lại.'}
 

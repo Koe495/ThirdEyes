@@ -59,19 +59,36 @@ cd E:\DeepLearning\ThirdEyes
 
 Danh sách hiện dùng các tên lớp tiếng Anh. Model custom cần có `pen`, `bottle`, `cell phone`, `chair`… tương ứng. Lớp không có trong model đang chọn sẽ được báo chưa hỗ trợ.
 
+## Tìm vật bằng giọng nói ngoại tuyến
+
+1. Bấm **V** hoặc nút **Nghe lệnh 6 giây**. Chờ tiếng bíp báo micro sẵn sàng rồi nói, ví dụ **“tìm chai nước”**.
+2. Hệ thống tự chọn loại vật và chụp ảnh để tìm; không cần chọn danh sách hoặc bấm F. Có lời xác nhận “Đang tìm …” khi âm thanh có thể phát.
+3. Nghe kết quả ưu tiên, gồm hướng giờ và khoảng cách ước tính. Nói **“đọc lại”** trong phiên nghe tiếp theo (hoặc bấm R) để nghe lại kết quả gần nhất của tìm vật/OCR.
+
+Hỗ trợ câu ngắn `tìm <tên vật>` và `tìm cái <tên vật>` cho toàn bộ danh sách. Ví dụ: tìm điện thoại, tìm ghế, tìm cốc, tìm sách, tìm máy tính xách tay, tìm bàn chải đánh răng. Các tên tương đương: chai/chai nước; ly/cốc/ca; bát/tô; thìa/muỗng; ô/dù; điều khiển/điều khiển từ xa; ti vi/tivi; va li/vali; ghế sô pha/sô pha. Nói “tìm bút” vẫn trả chưa hỗ trợ nếu dùng model COCO mặc định.
+
+Micro chỉ mở trong phiên nghe tối đa 6 giây, xử lý bằng Vosk đã cài trên máy, không gửi âm thanh lên mạng và không lưu bản ghi. Đây là chế độ bấm để nghe, chưa phải luôn nghe hoặc có từ đánh thức. Lệnh không rõ, tên không hỗ trợ hay câu ghép không được suy đoán; bấm V để nói lại bằng câu ngắn. Nếu bộ tìm vật/OCR đang bận, hệ thống báo thử lại. Cảnh báo vật cản tiếp tục hoạt động; giọng kết quả chờ hết phiên nghe để tránh micro thu lại tiếng đọc của hệ thống.
+
+### Ưu tiên vật gần camera
+
+- Model giữ tối đa 30 ứng viên cùng loại sau lọc nhận diện, rồi ánh xạ depth cho tất cả trước khi chọn. Không loại sớm chỉ vì vật gần có điểm nhận diện thấp hơn ba vật khác.
+- Ưu tiên khoảng cách hợp lệ nhỏ nhất trong khoảng 0,8–4 m; khi bằng nhau dùng điểm nhận diện. Giới hạn ba vật trên giao diện chỉ áp dụng sau bước sắp xếp; vật đầu có dấu `*` và nhãn “ưu tiên”. Giọng nói chỉ đọc vật ưu tiên để tránh quá nhiều thông tin.
+- Vật chưa đo được depth được xếp sau. Nếu có vật chưa đo được, lời đọc nói rõ chưa thể so sánh đầy đủ; không khẳng định vật được chọn gần hơn vật chưa đo được.
+- Nếu tất cả đều thiếu khoảng cách, báo chưa xác định được vật gần nhất rồi đọc vị trí vật có điểm nhận diện cao nhất. “Gần nhất” chỉ trong các ứng viên nhận diện và đo được của ảnh chụp, theo độ sâu ước tính; không phải xác nhận tất cả vật trong môi trường.
+
 ## Hành vi và giới hạn
 
 - Tìm theo yêu cầu trên một ảnh, không phải theo dõi vật liên tục. Lời đọc bắt đầu bằng “Trong ảnh vừa chụp”. Đổi góc hoặc di chuyển vật thì bấm F lại.
-- Tối đa ba kết quả, sắp theo điểm tin cậy; không khẳng định kết quả đầu là vật gần nhất. Hướng tính theo tâm vật trong ảnh đã chuẩn hóa lật ngang.
+- Tối đa ba kết quả hiển thị, ưu tiên khoảng cách hợp lệ gần nhất sau khi đo các ứng viên. Hướng tính theo tâm vật trong ảnh đã chuẩn hóa lật ngang.
 - Quy ước mặt đồng hồ **trên mặt phẳng ảnh**: 12 giờ ở trên, 3 giờ bên phải, 6 giờ ở dưới, 9 giờ bên trái; các hướng chéo được làm tròn đến giờ gần nhất. Vật gần tâm ảnh (bán kính chuẩn hóa 0,20) được báo “chính giữa khung nhìn”, tránh hướng nhảy thất thường. Đây không phải góc phương vị quanh người dùng: camera phía trước không quan sát được mọi hướng xung quanh.
 - Ví dụ lời đọc: “Trong ảnh vừa chụp: Tìm thấy chai nước ở hướng 3 giờ, khoảng cách ước tính 2 mét.” Nhãn trên ảnh có hướng giờ và số mét; khung nhỏ màu vàng là vùng lấy mẫu depth.
 - Khi có cặp RGB–depth lệch tối đa 20 ms, dùng ánh xạ SDK để chiếu các điểm depth sang ảnh màu (đã xử lý lật ngang). Object Finder lấy mẫu depth mỗi 2 pixel, đo vùng trung tâm bằng 50% chiều rộng và chiều cao khung vật. Chỉ nhận depth 0,8–4 m, ít nhất 6 mẫu, chênh lệch percentile 10–90 không quá 250 mm; lấy trung vị và đọc làm tròn 0,1 m. OCR vẫn dùng phép đo vùng chữ riêng.
 - Nếu vùng trung tâm thiếu depth hoặc lẫn nhiều bề mặt, không lấy khoảng cách nền ở mép khung để thay thế. Kết quả nêu rõ thiếu mẫu, depth chưa ổn định, ảnh chưa đồng bộ hoặc lỗi ánh xạ; log `FIND measurement` ghi trạng thái, số mẫu, khoảng cách và độ lệch thời gian.
 - Khoảng cách là độ sâu theo trục camera, chưa hiệu chỉnh thành cự ly đường thẳng 3D. Khung bao không phải mặt nạ phân đoạn: vật trong suốt, có lỗ, phản chiếu hoặc tâm khung nằm trên nền vẫn có thể cho depth nền; cách lấy vùng trung tâm chỉ giảm ảnh hưởng này. Chưa chứng nhận sai số bằng thước.
-- Tiến trình suy luận riêng, không chặn vòng cảnh báo depth. OCR và tìm vật không nhận yêu cầu mới đồng thời để giảm tải CPU. Cảnh báo được ưu tiên hơn giọng kết quả; lời đọc kết quả bị trì hoãn quá năm giây sẽ bỏ, kết quả vẫn còn trên màn hình.
+- Tiến trình suy luận riêng, không chặn vòng cảnh báo depth. OCR và tìm vật không nhận yêu cầu mới đồng thời để giảm tải CPU. Cảnh báo được ưu tiên hơn giọng kết quả; lời đọc bị trì hoãn quá mười giây sẽ bỏ, kết quả vẫn còn trên màn hình và có thể yêu cầu đọc lại.
 - `config/objects.json`: confidence 0.45, IoU 0.45, kích thước suy luận 960, tối đa ba kết quả, hai luồng CPU. Tăng kích thước là nội suy ảnh, không tạo chi tiết camera mới.
 - Lần đầu cần nạp model. Ảnh tối, phản sáng, vật trong suốt, che khuất hoặc nhỏ có thể bị bỏ sót/nhận nhầm. Không dùng “chưa thấy” để kết luận vật không tồn tại.
-- Chưa thêm tên từng vật vào lệnh giọng nói; chọn vật qua bảng điều khiển hoặc tham số chạy.
+- Danh sách vật và câu lệnh dùng chung giữa các môi trường Python, không cần tải thêm model giọng nói cho cập nhật này.
 
 ## Tạo dataset cho bút và các đồ dùng riêng
 
@@ -109,6 +126,13 @@ cd E:\DeepLearning\ThirdEyes
 ```
 
 Sau huấn luyện bốn lớp, model mới chỉ có bốn lớp đó; các lớp khác của COCO không tự được giữ lại. Muốn giữ toàn bộ lớp, phải thiết kế lại danh sách lớp và dataset đầy đủ, hoặc dùng thêm model riêng. Kiểm tra precision/recall và ảnh sai theo từng lớp, đặc biệt bút; sau đó thử toàn chuỗi camera → hướng → depth → âm thanh. Không đánh giá chỉ bằng loss train.
+
+## Kiểm chứng giọng nói và ưu tiên vật gần — 10/11/2026
+
+- **139/139 kiểm thử đạt** trên bản đã triển khai. Có kiểm thử lệnh giọng nói đi tới ObjectFinder trong vòng lặp ứng dụng không có bảng điều khiển, các tên tương đương, từ chối lệnh mơ hồ, và vật thứ tư theo điểm nhận diện vẫn được ưu tiên nếu có depth gần nhất.
+- Dùng Piper tạo âm thanh thử, đưa trực tiếp vào model Vosk đang cài: nhận đúng bốn câu “tìm chai nước”, “tìm điện thoại”, “tìm cái ghế”, “tìm máy tính xách tay”. Đây là kiểm tra giọng tổng hợp, chưa thay thế kiểm tra giọng người dùng qua micro và tiếng ồn thực tế.
+- Đã nối kết quả Vosk với tiến trình ObjectFinder thật trên cặp RGB–depth Kinect lưu từ lần thử trước: nhận diện chai, chọn `nearest_measured`, đo **1,083 m**, tạo câu đọc khoảng **1,1 m**. Phép thử phát lại này có một chai; trường hợp nhiều vật được kiểm chứng bằng dữ liệu kiểm thử, chưa đo đối chiếu nhiều vật thật bằng thước.
+- Không cài thêm thư viện/model, không lưu bản ghi micro. Các file sửa được sao lưu trong `backups/before_voice_find_*`.
 
 ## Kiểm chứng cập nhật khoảng cách và hướng giờ — 10/11/2026
 

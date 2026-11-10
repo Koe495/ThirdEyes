@@ -120,6 +120,7 @@ def main(argv=None):
     finder = ObjectFinder(model=args.object_model)
     find_requested = False
     pending_found = None
+    last_result_text = ''
     found_view = OCRView('ThirdEyes - Tìm vật (ảnh chụp)', 'ThirdEyes | Object search snapshot')
     reader = None
     panel = None
@@ -162,20 +163,21 @@ def main(argv=None):
                 snapshot = frames if pair is None else replace(frames, rgb=pair.rgb, depth_mm=pair.depth_mm,
                     color_timestamp_ms=pair.color_ms, depth_timestamp_ms=pair.depth_ms, color_received_at=pair.received_at)
                 return reader.request(snapshot, now, pair=pair, mapper=mapper)
-            def request_find():
+            def request_find(target=None):
                 if reader.busy or finder.busy:
                     return False
                 audio.stop_speech()
                 snapshot = frames if pair is None else replace(frames, rgb=pair.rgb, depth_mm=pair.depth_mm,
                     color_received_at=pair.received_at, color_timestamp_ms=pair.color_ms, depth_timestamp_ms=pair.depth_ms)
-                return finder.find(snapshot, panel.target.get() if panel else args.find_target, now, pair, mapper)
+                target = target or (panel.target.get() if panel else args.find_target)
+                return finder.find(snapshot, target, now, pair, mapper)
             observation = depth_processor.process(frames, now)
             report = detector.process(observation)
             audio.process(report, now)
             if recorder:
                 recorder.record(frames, report, now)
-            if not greeted and audio.speech is not None and audio.speech.state == 'ready':
-                greeted = audio.read_text('ThirdEyes sẵn sàng. Bấm O để đọc văn bản. Bấm V, rồi nói đọc văn bản, đọc lại, dừng đọc hoặc trạng thái.', now)
+            if not greeted and not voice.listening and audio.speech is not None and audio.speech.state == 'ready':
+                greeted = audio.read_text('ThirdEyes sẵn sàng. Bấm V, chờ tín hiệu rồi nói tìm chai nước, tìm điện thoại hoặc đọc văn bản.', now)
             if args.read_once and not read_requested and frames.rgb is not None:
                 read_requested = request_read()
             result = reader.poll()
@@ -183,17 +185,19 @@ def main(argv=None):
                 find_requested = request_find()
             found = finder.poll()
             if found is not None:
+                last_result_text = found['speak']
                 pending_found = (found['speak'], now)
                 if not args.headless:
                     found_view.show(found, finder.snapshot_rgb)
                 logging.info('FIND status=%s target=%s count=%d ms=%s', found['status'], found.get('target_label'), len(found.get('regions', [])), found.get('total_ms'))
-            if pending_found and not finder.busy:
-                if now - pending_found[1] > 5 or audio.read_text(pending_found[0], now):
-                    pending_found = None
             if result is not None:
+                last_result_text = result.get('speak', '')
+                pending_found = (last_result_text, now)
                 if not args.headless:
                     ocr_view.show(result, reader.snapshot_rgb)
-                audio.read_text(result.get("speak", ""), now)
+            if pending_found and not voice.listening:
+                if now - pending_found[1] > 10 or audio.read_text(pending_found[0], now):
+                    pending_found = None
             status = (report.status, tuple((z.zone, z.level, z.known, z.reason, z.suppress_audio) for z in report.zones))
             if status != last_status:
                 logging.info("OBSTACLES status=%s zones=%s", report.status,
@@ -235,7 +239,20 @@ def main(argv=None):
                 break
             for action in actions:
                 if isinstance(action, tuple) and action[0] == 'say':
-                    audio.read_text(action[1], now)
+                    if not voice.listening:
+                        audio.read_text(action[1], now)
+                elif isinstance(action, tuple) and action[0] == 'find':
+                    target = action[1]
+                    if target not in TARGETS:
+                        continue
+                    pending_found = None
+                    args.find_target = target
+                    if panel:
+                        panel.target.set(target)
+                    if request_find(target):
+                        pending_found = (f'Đang tìm {target.lower()}.', now)
+                    else:
+                        pending_found = ('Chưa thể tìm vật lúc này. Hệ thống đang xử lý hoặc chưa có ảnh mới. Hãy thử lại.', now)
                 elif action == 'read':
                     pending_found = None
                     request_read()
@@ -243,7 +260,7 @@ def main(argv=None):
                     pending_found = None
                     request_find()
                 elif action == 'repeat':
-                    audio.read_text(reader.last_text, now)
+                    pending_found = (last_result_text or 'Chưa có kết quả để đọc lại.', now)
                 elif action == 'cancel':
                     finder.cancel(); pending_found = None
                     reader.cancel(); audio.stop_speech()

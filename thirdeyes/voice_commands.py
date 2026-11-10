@@ -5,26 +5,14 @@ from pathlib import Path
 import queue
 import subprocess
 import threading
-import unicodedata
-
-COMMANDS = {'đọc văn bản': 'read', 'đọc chữ': 'read', 'đọc lại': 'repeat', 'lặp lại': 'repeat',
-            'dừng đọc': 'cancel', 'dừng lại': 'cancel', 'trạng thái': 'status', 'kiểm tra': 'status'}
-
-
-def parse_command(result):
-    text = ' '.join(unicodedata.normalize('NFC', result.get('text', '')).lower().split())
-    words = result.get('result', [])
-    confidence = [w.get('conf', 0) for w in words]
-    if not confidence or min(confidence) < .5 or sum(confidence) / len(confidence) < .75:
-        return None
-    return COMMANDS.get(text)
+from thirdeyes.voice_grammar import COMMANDS, parse_command
 
 
 class VoiceCommands:
     def __init__(self, root):
         self.root = Path(root)
         self.state = 'idle'
-        self.message = 'V: nghe một lệnh trong 6 giây'
+        self.message = 'V: nghe 6 giây; ví dụ: tìm chai nước'
         self.events = queue.Queue(maxsize=4)
         self.process = None
         self.thread = None
@@ -38,6 +26,10 @@ class VoiceCommands:
         self.thread = threading.Thread(target=self._run, daemon=True)
         self.thread.start()
         return True
+
+    @property
+    def listening(self):
+        return self.state in {'starting', 'listening'}
 
     def _run(self):
         try:

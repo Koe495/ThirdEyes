@@ -4,47 +4,52 @@ import logging
 import math
 from thirdeyes.ocr import TextReader
 
-# Shared by the control panel and CLI; values must match model.names.
-TARGETS = {
-    'Chai nước': 'bottle',
-    'Điện thoại': 'cell phone',
-    'Ghế': 'chair',
-    'Cốc': 'cup',
-    'Sách': 'book',
-    'Laptop': 'laptop',
-    'Chuột máy tính': 'mouse',
-    'Bàn phím': 'keyboard',
-    'Điều khiển': 'remote',
-    'Ba lô': 'backpack',
-    'Túi xách': 'handbag',
-    'Kéo': 'scissors',
-    'Ly rượu có chân': 'wine glass',
-    'Bát / tô': 'bowl',
-    'Thìa / muỗng': 'spoon',
-    'Nĩa': 'fork',
-    'Dao': 'knife',
-    'Tivi': 'tv',
-    'Đồng hồ': 'clock',
-    'Vali': 'suitcase',
-    'Ô / dù': 'umbrella',
-    'Ghế sofa': 'couch',
-    'Ghế băng': 'bench',
-    'Bàn ăn': 'dining table',
-    'Giường': 'bed',
-    'Chậu cây': 'potted plant',
-    'Bình hoa': 'vase',
-    'Tủ lạnh': 'refrigerator',
-    'Lò vi sóng': 'microwave',
-    'Bàn chải đánh răng': 'toothbrush',
-    'Bút': 'pen',
-}
+from thirdeyes.object_catalog import TARGETS
+
+
+def valid_distance(region):
+    depth = region.get('depth', {})
+    distance = depth.get('distance_m')
+    if (depth.get('status') == 'ok' and not isinstance(distance, bool)
+            and isinstance(distance, (int, float)) and math.isfinite(distance) and .8 <= distance <= 4):
+        return distance
+    return None
+
+
+def prioritize_regions(result):
+    """Sort all measured candidates before imposing the display limit."""
+    regions = result.get('regions', [])
+    if result.get('status') != 'ok' or not regions:
+        return
+    def key(region):
+        distance = valid_distance(region)
+        return (distance is None, distance if distance is not None else float('inf'),
+                -region.get('confidence', 0))
+    regions = sorted(regions, key=key)
+    unknown = sum(valid_distance(r) is None for r in regions)
+    result['detected_count'] = len(regions)
+    result['unmeasured_count'] = unknown
+    result['selection'] = 'nearest_measured' if unknown < len(regions) else 'confidence_only'
+    for i, region in enumerate(regions):
+        region['preferred'] = i == 0
+    limit = max(1, min(30, int(result.get('max_results', 3))))
+    result['regions'] = regions[:limit]
+    result['truncated'] = bool(result.get('truncated')) or len(regions) > limit
+
 
 def describe_found(result):
     if result['status'] != 'ok':
         return result.get('speak', 'Chưa có kết quả tìm vật.')
     directions = {'LEFT': 'bên trái', 'CENTER': 'phía trước', 'RIGHT': 'bên phải'}
     sentences = ['Trong ảnh vừa chụp:']
-    for region in result.get('regions', []):
+    selected = result.get('selection')
+    if selected == 'nearest_measured' and result.get('detected_count', 0) > 1:
+        sentences.append('Ưu tiên vật gần nhất trong các vật đo được khoảng cách.')
+    elif selected == 'confidence_only':
+        sentences.append('Chưa xác định được vật gần nhất. Báo vật nhận diện rõ nhất.')
+    # Speak one preferred result; retain other candidates for the result window.
+    regions = result.get('regions', [])[:1] if selected else result.get('regions', [])
+    for region in regions:
         if 'clock_hour' in region:
             hour = region['clock_hour']
             direction = 'chính giữa khung nhìn' if hour is None else f'hướng {hour} giờ'
@@ -52,8 +57,8 @@ def describe_found(result):
             direction = directions.get(region.get('direction'), 'hướng chưa xác định')
         message = f"Tìm thấy {result['target_label'].lower()} ở {direction}"
         depth = region.get('depth', {})
-        distance = depth.get('distance_m')
-        if depth.get('status') == 'ok' and isinstance(distance, (int, float)) and math.isfinite(distance) and .8 <= distance <= 4:
+        distance = valid_distance(region)
+        if distance is not None:
             meters = f'{distance:.1f}'.rstrip('0').rstrip('.')
             message += f', khoảng cách ước tính {meters} mét'
         else:
@@ -67,7 +72,11 @@ def describe_found(result):
             if reason:
                 message += f' do {reason}'
         sentences.append(message + '.')
-    if result.get('truncated'):
+    if selected == 'nearest_measured' and result.get('unmeasured_count'):
+        sentences.append('Có vật khác chưa đo được khoảng cách nên chưa thể so sánh đầy đủ.')
+    if result.get('candidate_limit_reached'):
+        sentences.append('Ảnh có nhiều vật; kết quả chỉ xét các ứng viên đã nhận diện.')
+    elif result.get('truncated') and not selected:
         sentences.append('Còn các vật cùng loại khác trong ảnh.')
     return ' '.join(sentences)
 
@@ -103,6 +112,7 @@ class ObjectFinder(TextReader):
                 logging.info('FIND measurement hour=%s status=%s distance_m=%s samples=%s rgbd=%s skew_ms=%s',
                              region.get('clock_hour'), region['depth'].get('status'), region['depth'].get('distance_m'),
                              region['depth'].get('samples'), status, result.get('rgbd_skew_ms'))
+            prioritize_regions(result)
             result['speak'] = describe_found(result)
             result['text'] = result['speak']
             self.message = result['speak']
