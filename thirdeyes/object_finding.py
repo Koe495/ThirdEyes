@@ -92,6 +92,8 @@ class ObjectFinder(TextReader):
         self.worker_config = root / 'config/objects.json'
         self.log_name = 'object_worker.log'
         self.message = 'F: tìm vật đã chọn'
+        self.tracking_active = False
+        self.frame_received_at = None
 
     def find(self, frames, target='Chai nước', now=None, pair=None, mapper=None):
         if target not in TARGETS or self.busy:
@@ -99,12 +101,17 @@ class ObjectFinder(TextReader):
         self.request_payload = {'target': TARGETS[target], 'target_label': target}
         accepted = self.request(frames, now, pair=pair, mapper=mapper)
         if accepted:
+            self.frame_received_at = frames.color_received_at
             self.message = f'Đang tìm {target.lower()} trong ảnh chụp'
         return accepted
 
     def poll(self):
         result = super().poll()
         if result is not None:
+            result.setdefault('target_label', self.request_payload.get('target_label'))
+            result['frame_received_at'] = self.frame_received_at
+            if self.snapshot_rgb is not None:
+                result['frame_size'] = [self.snapshot_rgb.shape[1], self.snapshot_rgb.shape[0]]
             for region in result.get('regions', []):
                 status = result.get('rgbd_status', 'unpaired')
                 region.setdefault('depth', {'status': status if status in {'unpaired', 'mapping_error'} else 'unavailable',
@@ -112,6 +119,8 @@ class ObjectFinder(TextReader):
                 logging.info('FIND measurement hour=%s status=%s distance_m=%s samples=%s rgbd=%s skew_ms=%s',
                              region.get('clock_hour'), region['depth'].get('status'), region['depth'].get('distance_m'),
                              region['depth'].get('samples'), status, result.get('rgbd_skew_ms'))
+            if self.tracking_active:
+                result['max_results'] = 30  # association must see every retained candidate
             prioritize_regions(result)
             result['speak'] = describe_found(result)
             result['text'] = result['speak']

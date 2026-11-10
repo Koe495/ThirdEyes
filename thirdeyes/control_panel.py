@@ -95,7 +95,7 @@ class ControlPanel:
         self.selector.pack(fill='x', pady=(0, 8), ipady=5)
         self.selector.bind('<<ComboboxSelected>>', lambda _e: self.events.put(('say', self.target.get())))
         self.selector.bind('<FocusIn>', lambda _e: self._reveal(self.selector))
-        self._button(sidebar, 'Tìm vật đã chọn                   F', 'find')
+        self._button(sidebar, 'Theo dõi vật đã chọn             F', 'find')
         self._separator(sidebar)
         row = tk.Frame(sidebar, bg=SURFACE)
         row.pack(fill='x')
@@ -264,7 +264,8 @@ class ControlPanel:
     def show_result(self, result, rgb):
         name = 'Tìm vật' if 'target_label' in result else 'Đọc văn bản'
         state = STATES.get(result.get('status'), 'Đã có kết quả')
-        self.result_meta.configure(text=f'{name}  /  {state}  /  Ảnh chụp', fg=ACCENT if result.get('status') == 'ok' else WARNING)
+        mode = 'Theo dõi · khung hình nhận diện gần nhất' if result.get('tracking') else 'Ảnh chụp'
+        self.result_meta.configure(text=f'{name}  /  {state}  /  {mode}', fg=ACCENT if result.get('status') == 'ok' else WARNING)
         content = result.get('text') or result.get('speak') or 'Chưa có nội dung nhận diện.'
         if 'target_label' in result and result.get('regions'):
             content += '\n\nCÁC VẬT ĐÃ NHẬN DIỆN'
@@ -275,7 +276,9 @@ class ControlPanel:
                 content += f'\n{i}. {direction} · {distance}' + (' · Ưu tiên' if region.get('preferred') else '')
         self._set_result_text(content)
         self.result_image.display(result_snapshot(rgb, result))
-        self.tabs.select(self.results)
+        if not result.get('tracking') or getattr(self, '_tracking_target', None) != result.get('target_label'):
+            self.tabs.select(self.results)
+        self._tracking_target = result.get('target_label') if result.get('tracking') else None
 
     def present(self, frames, report, audio, reader, finder, voice, pair, now):
         if self.closed:
@@ -309,6 +312,11 @@ class ControlPanel:
                 self.overview.configure(text='Depth chưa đầy đủ · Không thể kết luận đường trống', fg=WARNING)
                 self.alert.configure(text='DEPTH CHƯA ĐẦY ĐỦ', fg=WARNING)
             task = 'Tìm vật · Đang nhận diện ảnh chụp' if finder.busy else 'Đọc văn bản · Đang xử lý ảnh chụp' if reader.busy else 'Sẵn sàng · Chọn một thao tác hoặc ra lệnh bằng giọng nói'
+            if getattr(finder, 'tracking_active', False):
+                task = finder.message
+                if not getattr(finder, 'tracking_fresh', False):
+                    task += ' · Chưa có vị trí mới, không phát bíp'
+                    self.result_meta.configure(text='Theo dõi · Chưa có vị trí mới · Ảnh kết quả cũ', fg=WARNING)
             self.task_status.configure(text=task)
             for name, module in (('Tìm vật', finder), ('Đọc văn bản', reader)):
                 if not module.busy and module.status in {'error', 'unavailable', 'no_frame', 'stale', 'timeout'}:

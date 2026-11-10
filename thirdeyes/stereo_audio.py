@@ -7,18 +7,20 @@ import wave
 import numpy as np
 
 SAMPLE_RATE = 44100
-TONES = {"near": (1000, .100), "urgent": (1600, .150), "listen": (700, .060),
+TONES = {"track": (850, .080), "near": (1000, .100), "urgent": (1600, .150), "listen": (700, .060),
          "depth_unavailable": (500, .100), "test": (1000, .100)}
 GAINS = {"LEFT": (1., 0.), "CENTER": (2 ** -.5, 2 ** -.5), "RIGHT": (0., 1.)}
 
 
 @lru_cache(maxsize=64)
 def render_cue(kind: str, zones: tuple[str, ...] = (), volume: float = .25,
-               swap_channels: bool = False) -> bytes:
+               swap_channels: bool = False, pan: float | None = None) -> bytes:
     """Return 16-bit stereo WAV. Multiple directions stay separate in time."""
     if not math.isfinite(volume) or not 0 < volume <= 1:
         raise ValueError("Audio volume must be in (0, 1]")
     frequency, duration = TONES[kind]
+    if pan is not None and (not math.isfinite(pan) or not -1 <= pan <= 1):
+        raise ValueError('Stereo pan must be in [-1, 1]')
     if kind == "test":
         directions = ("LEFT", "CENTER", "RIGHT")
     elif kind == "depth_unavailable":
@@ -35,6 +37,9 @@ def render_cue(kind: str, zones: tuple[str, ...] = (), volume: float = .25,
     parts = []
     for direction in directions:
         gains = GAINS[direction]
+        if kind == 'track' and pan is not None:
+            angle = (pan + 1) * math.pi / 4
+            gains = (math.cos(angle), math.sin(angle))
         if swap_channels:
             gains = gains[::-1]
         if parts:

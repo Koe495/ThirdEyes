@@ -4,47 +4,48 @@
 
 ## Sử dụng
 
+**Chế độ hiện tại:** F/lệnh tìm vật bắt đầu phiên theo dõi liên tục, không chỉ chụp một ảnh. X dừng; O chuyển sang OCR. Đọc vị trí đầu phiên rồi bíp stereo mỗi giây; xem [OBJECT_TRACKING.md](OBJECT_TRACKING.md). `--find-once` giữ cách kiểm thử ảnh tĩnh. Các mục kết quả kiểm thử cũ bên dưới là lịch sử trước khi có tracking.
+
 1. Chạy `run.bat`.
 2. Chọn vật trong danh sách phía trên bảng điều khiển; dùng phím mũi tên hoặc chuột.
 3. Bấm nút **Tìm vật đã chọn [F]**, hoặc F khi cửa sổ camera/bảng điều khiển có focus. Khi focus đang ở danh sách, Tab ra nút rồi Enter.
-4. Xem cửa sổ kết quả và khung trên **ảnh chụp**, nghe hướng theo mặt đồng hồ và khoảng cách ước tính. Khoảng cách chỉ đọc khi phép đo depth đủ tin cậy. X hủy tìm vật/đọc chữ và dừng âm đọc; F chụp lại để tìm tiếp.
+4. Xem cửa sổ kết quả và khung trên **ảnh chụp**, nghe hướng theo mặt đồng hồ và khoảng cách ước tính. Khoảng cách chỉ đọc khi phép đo depth đủ tin cậy. X hủy tìm vật/đọc chữ và dừng âm đọc; F bắt đầu lại phiên theo dõi và chọn lại vật.
 
-Danh sách chọn hỗ trợ **30 loại vật** với model mặc định, dùng chung cho bảng điều khiển và `--find-target`.
+Danh sách chọn hỗ trợ **29 loại vật** với model mặc định, dùng chung cho bảng điều khiển và `--find-target`.
 
-| Tên trong giao diện | Lớp model |
-| --- | --- |
-| Chai nước | `bottle` |
-| Điện thoại | `cell phone` |
-| Ghế | `chair` |
-| Cốc | `cup` |
-| Sách | `book` |
-| Laptop | `laptop` |
-| Chuột máy tính | `mouse` |
-| Bàn phím | `keyboard` |
-| Điều khiển | `remote` |
-| Ba lô | `backpack` |
-| Túi xách | `handbag` |
-| Kéo | `scissors` |
-| Ly rượu có chân | `wine glass` |
-| Bát / tô | `bowl` |
-| Thìa / muỗng | `spoon` |
-| Nĩa | `fork` |
-| Dao | `knife` |
-| Tivi | `tv` |
-| Đồng hồ | `clock` |
-| Vali | `suitcase` |
-| Ô / dù | `umbrella` |
-| Ghế sofa | `couch` |
-| Ghế băng | `bench` |
-| Bàn ăn | `dining table` |
-| Giường | `bed` |
-| Chậu cây | `potted plant` |
-| Bình hoa | `vase` |
-| Tủ lạnh | `refrigerator` |
-| Lò vi sóng | `microwave` |
-| Bàn chải đánh răng | `toothbrush` |
+| Thứ tự | Lựa chọn | Lớp model |
+|---:|---|---|
+| 0 | Người | `person` |
+| 1 | Xe buýt | `bus` |
+| 2 | Ghế băng | `bench` |
+| 3 | Mèo | `cat` |
+| 4 | Chó | `dog` |
+| 5 | Ba lô | `backpack` |
+| 6 | Ô / dù | `umbrella` |
+| 7 | Túi xách | `handbag` |
+| 8 | Vali | `suitcase` |
+| 9 | Chai nước | `bottle` |
+| 10 | Cốc | `cup` |
+| 11 | Nĩa | `fork` |
+| 12 | Dao | `knife` |
+| 13 | Thìa / muỗng | `spoon` |
+| 14 | Bát / tô | `bowl` |
+| 15 | Ghế | `chair` |
+| 16 | Ghế sofa | `couch` |
+| 17 | Chậu cây | `potted plant` |
+| 18 | Bàn ăn | `dining table` |
+| 19 | Điện thoại | `cell phone` |
+| 20 | Lò vi sóng | `microwave` |
+| 21 | Lò nướng | `oven` |
+| 22 | Máy nướng bánh mì | `toaster` |
+| 23 | Bồn rửa | `sink` |
+| 24 | Tủ lạnh | `refrigerator` |
+| 25 | Bình hoa | `vase` |
+| 26 | Kéo | `scissors` |
+| 27 | Máy sấy tóc | `hair drier` |
+| 28 | Bàn chải đánh răng | `toothbrush` |
 
-“Chai nước” ánh xạ tới `bottle`, không xác nhận chai có nước. Ghế, ghế sofa và ghế băng là ba lớp riêng. **Bút chưa có trong model COCO**; lựa chọn thứ 31 này trả `unsupported` nếu model đang dùng không có lớp `pen`, để phân biệt với `not_found`. Không cần tải thêm trọng số để dùng 30 loại trên. Vật nhỏ như thìa, nĩa, bàn chải có thể khó nhận diện nếu chiếm ít pixel; cần đặt đủ gần, rõ và đủ sáng. Việc có lớp trong model không bảo đảm nhận diện mọi mẫu vật; chưa kiểm thử camera thực tế cho toàn bộ 30 loại.
+Danh sách cập nhật ngày 11/11/2026 gồm đúng 29 lớp theo yêu cầu. Số 0–28 là thứ tự lựa chọn, không phải ID COCO gốc. Detector tra ID theo `model.names`, nên vẫn chạy đúng với YOLO11s pretrained và model custom có tên lớp tương ứng. “Chai nước” ánh xạ tới `bottle`, không xác nhận chai có nước. Chưa kiểm thử camera cho toàn bộ danh sách mới.
 
 ```powershell
 cd E:\DeepLearning\ThirdEyes
@@ -57,7 +58,7 @@ cd E:\DeepLearning\ThirdEyes
 .\setup_objects.bat
 ```
 
-Danh sách hiện dùng các tên lớp tiếng Anh. Model custom cần có `pen`, `bottle`, `cell phone`, `chair`… tương ứng. Lớp không có trong model đang chọn sẽ được báo chưa hỗ trợ.
+Danh sách hiện dùng các tên lớp tiếng Anh. Model custom cần có tên lớp tương ứng với bảng trên. Lớp không có trong model đang chọn sẽ được báo chưa hỗ trợ.
 
 ## Tìm vật bằng giọng nói ngoại tuyến
 
@@ -65,7 +66,7 @@ Danh sách hiện dùng các tên lớp tiếng Anh. Model custom cần có `pen
 2. Hệ thống tự chọn loại vật và chụp ảnh để tìm; không cần chọn danh sách hoặc bấm F. Có lời xác nhận “Đang tìm …” khi âm thanh có thể phát.
 3. Nghe kết quả ưu tiên, gồm hướng giờ và khoảng cách ước tính. Nói **“đọc lại”** trong phiên nghe tiếp theo (hoặc bấm R) để nghe lại kết quả gần nhất của tìm vật/OCR.
 
-Hỗ trợ câu ngắn `tìm <tên vật>` và `tìm cái <tên vật>` cho toàn bộ danh sách. Ví dụ: tìm điện thoại, tìm ghế, tìm cốc, tìm sách, tìm máy tính xách tay, tìm bàn chải đánh răng. Các tên tương đương: chai/chai nước; ly/cốc/ca; bát/tô; thìa/muỗng; ô/dù; điều khiển/điều khiển từ xa; ti vi/tivi; va li/vali; ghế sô pha/sô pha. Nói “tìm bút” vẫn trả chưa hỗ trợ nếu dùng model COCO mặc định.
+Hỗ trợ câu ngắn `tìm <tên vật>` và `tìm cái <tên vật>` cho danh sách trên. Ví dụ: tìm người, tìm xe buýt, tìm mèo, tìm chai nước, tìm điện thoại, tìm máy sấy tóc. Các tên tương đương gồm chai/chai nước, ly/cốc/ca, bát/tô, thìa/muỗng, ô/dù, vali/va li, bồn rửa/chậu rửa. Các vật đã bỏ như bút, sách, laptop không còn là lệnh tìm hợp lệ.
 
 Micro chỉ mở trong phiên nghe tối đa 6 giây, xử lý bằng Vosk đã cài trên máy, không gửi âm thanh lên mạng và không lưu bản ghi. Đây là chế độ bấm để nghe, chưa phải luôn nghe hoặc có từ đánh thức. Lệnh không rõ, tên không hỗ trợ hay câu ghép không được suy đoán; bấm V để nói lại bằng câu ngắn. Nếu bộ tìm vật/OCR đang bận, hệ thống báo thử lại. Cảnh báo vật cản tiếp tục hoạt động; giọng kết quả chờ hết phiên nghe để tránh micro thu lại tiếng đọc của hệ thống.
 
@@ -90,9 +91,9 @@ Micro chỉ mở trong phiên nghe tối đa 6 giây, xử lý bằng Vosk đã 
 - Lần đầu cần nạp model. Ảnh tối, phản sáng, vật trong suốt, che khuất hoặc nhỏ có thể bị bỏ sót/nhận nhầm. Không dùng “chưa thấy” để kết luận vật không tồn tại.
 - Danh sách vật và câu lệnh dùng chung giữa các môi trường Python, không cần tải thêm model giọng nói cho cập nhật này.
 
-## Tạo dataset cho bút và các đồ dùng riêng
+## Tham khảo: tạo dataset mở rộng ngoài danh sách hiện tại
 
-Mẫu YAML: `datasets/objects/data.yaml`, gồm bốn lớp `bottle`, `cell phone`, `chair`, `pen`.
+Ví dụ mở rộng trong tương lai (không thuộc danh sách hiện tại): bốn lớp `bottle`, `cell phone`, `chair`, `pen`.
 
 ```text
 datasets/objects/

@@ -22,8 +22,8 @@ class VoiceObjectTests(unittest.TestCase):
     def test_examples_and_vietnamese_synonyms(self):
         for text, target in [('tìm chai nước', 'Chai nước'), ('tìm chai', 'Chai nước'),
                              ('tìm điện thoại', 'Điện thoại'), ('tìm cái ghế', 'Ghế'),
-                             ('tìm máy tính xách tay', 'Laptop'), ('tìm muỗng', 'Thìa / muỗng'),
-                             ('tìm dù', 'Ô / dù'), ('tìm tô', 'Bát / tô'), ('tìm bút', 'Bút')]:
+                             ('tìm xe buýt', 'Xe buýt'), ('tìm muỗng', 'Thìa / muỗng'),
+                             ('tìm dù', 'Ô / dù'), ('tìm tô', 'Bát / tô'), ('tìm máy sấy tóc', 'Máy sấy tóc')]:
             self.assertEqual(parse_command(heard(text)), ('find', target))
 
     def test_all_targets_have_commands_in_shared_recognizer_grammar(self):
@@ -39,7 +39,7 @@ class VoiceObjectTests(unittest.TestCase):
         self.assertEqual(parse_command(heard(text)), ('find', 'Chai nước'))
 
     def test_uncertain_unknown_or_compound_commands_are_rejected(self):
-        for text in ('tìm', 'tìm chìa khóa', 'tìm chai nước và điện thoại', 'không tìm chai nước', '[unk]'):
+        for text in ('tìm bút', 'tìm sách', 'tìm máy tính xách tay', 'tìm', 'tìm chìa khóa', 'tìm chai nước và điện thoại', 'không tìm chai nước', '[unk]'):
             self.assertIsNone(parse_command(heard(text)))
         for confidence in (.1, .6, float('nan'), float('inf'), True, 'high'):
             self.assertIsNone(parse_command(heard('tìm chai nước', confidence)))

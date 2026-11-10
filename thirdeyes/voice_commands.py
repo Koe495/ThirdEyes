@@ -12,7 +12,7 @@ class VoiceCommands:
     def __init__(self, root):
         self.root = Path(root)
         self.state = 'idle'
-        self.message = 'V: nghe 6 giây; ví dụ: tìm chai nước'
+        self.message = 'V: nghe 6 giây'
         self.events = queue.Queue(maxsize=4)
         self.process = None
         self.thread = None

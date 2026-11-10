@@ -45,7 +45,7 @@ class BeepPlayer:
                 continue
             try:
                 import winsound
-                wav = render_cue(event.kind, event.zones, self.volume, self.swap_channels)
+                wav = render_cue(event.kind, event.zones, self.volume, self.swap_channels, pan=event.pan)
                 # SND_MEMORY is synchronous; only this worker waits, never capture.
                 winsound.PlaySound(wav, winsound.SND_MEMORY | winsound.SND_NODEFAULT)
             except Exception as exc:
@@ -89,6 +89,7 @@ class CoordinatorAudio:
         self.recovery_since = None
         self.fault_announced = False
         self.last_event = None
+        self.tracking_blocked = False
 
     def toggle_mute(self):
         self.muted = not self.muted
@@ -142,6 +143,7 @@ class CoordinatorAudio:
         elif faulty and self.fault_since is not None and now - self.fault_since >= cfg.fault_delay_s and not self.fault_announced:
             event = SoundEvent("depth_unavailable", "depth_missing_or_low_confidence")
         minimum_gap = .25 if level > self.last_level else cfg.cooldown_s
+        self.tracking_blocked = event is not None
         if event is None or self.muted or now - self.last_sound < minimum_gap:
             return None
         self.stop_speech()
@@ -162,6 +164,16 @@ class CoordinatorAudio:
         logging.info("BEEP kind=%s reason=%s zones=%s details=%s", event.kind, event.reason, ",".join(event.zones),
                      [(z.zone, round(z.distance_m, 3), round(z.closing_mps, 3), z.reason) for z in candidates])
         return event
+
+    def tracking_beep(self, pan, now):
+        # Tracking never advances obstacle cooldown or interrupts speech.
+        if (self.muted or self.tracking_blocked or now - self.last_sound < .7
+                or self.speech is not None and self.speech.state in {'starting', 'speaking'}):
+            return False
+        accepted = self.player.submit(SoundEvent('track', 'object_tracking', pan=pan))
+        if accepted:
+            logging.info('TRACK BEEP pan=%.2f at=%.3f', pan, now)
+        return accepted
 
     def close(self):
         self.player.close()

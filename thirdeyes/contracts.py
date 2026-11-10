@@ -72,3 +72,4 @@ class SoundEvent:
     kind: str
     reason: str
     zones: tuple[str, ...] = ()
+    pan: float | None = None  # -1 left, +1 right; continuous object tracking cue

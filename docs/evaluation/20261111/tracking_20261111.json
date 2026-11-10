@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-11",
+  "runs": [
+    {
+      "log": "tracking_kinect_retry_20261111.log",
+      "finished": true,
+      "accepted_tracking_results": 11,
+      "beep_count": 4,
+      "beep_intervals_s": [
+        1.008,
+        1.585,
+        1.003
+      ],
+      "pan": [
+        -0.2,
+        0.1,
+        0.35,
+        0.45
+      ],
+      "speech_descriptions": null,
+      "speech_loss_notices": null,
+      "speech_note": "Speech-event instrumentation was added only for second run; absence of log lines does not mean no speech."
+    },
+    {
+      "log": "tracking_kinect_quiet_20261111.log",
+      "finished": true,
+      "accepted_tracking_results": 0,
+      "beep_count": 0,
+      "beep_intervals_s": [],
+      "pan": [],
+      "speech_descriptions": 0,
+      "speech_loss_notices": 1
+    }
+  ],
+  "scope": "First run used superseded loss/reacquisition speech policy and produced user-reported chatter. Second run uses quiet policy. Counts are software events, not proof the user heard them. No ground-truth tracking labels or tape-measured distances.",
+  "policy": "Position speech once/session; loss speech at most once/session after 5s (10s before acquisition); two consecutive detections; silence on stale/missing results; beep interval >=1s.",
+  "tests": {
+    "passed": 155,
+    "total": 155,
+    "seconds": 10.931,
+    "new_tracking_tests": 12
+  },
+  "final_live_limit": "Quiet-policy run had no confirmed target and no tracking beeps; confirms only one not-found speech request, not successful final live tracking."
+}

@@ -21,6 +21,7 @@ from thirdeyes.ocr import TextReader
 from thirdeyes.ocr_view import OCRView
 from thirdeyes.speech import OfflineSpeech
 from thirdeyes.object_finding import ObjectFinder, TARGETS
+from thirdeyes.object_tracking import ObjectTracking
 from thirdeyes.ui_logging import WINDOW, configure_logging, render
 from thirdeyes.rgbd import FrameSynchronizer, KinectRegionMapper
 from thirdeyes.control_panel import ControlPanel, KEYS, describe_status
@@ -51,6 +52,7 @@ def main(argv=None):
     parser.add_argument('--no-controls', action='store_true', help='Disable the large-button control window')
     parser.add_argument('--find-target', choices=list(TARGETS), default='Chai nước')
     parser.add_argument('--find-once', action='store_true', help='Search once when a fresh frame arrives')
+    parser.add_argument('--track', action='store_true', help='Start continuous tracking of --find-target')
     parser.add_argument('--object-model', type=Path, help='Local YOLO weights; custom model must use English class names')
     parser.add_argument('--record-dir', type=Path, help='Opt in: save local RGB/depth samples for evaluation in a NEW directory')
     args = parser.parse_args(argv)
@@ -118,7 +120,10 @@ def main(argv=None):
                              config, muted=args.mute)
     logging.info("Stereo cues enabled; volume=%.2f swapped=%s", args.audio_volume, args.swap_audio_channels)
     finder = ObjectFinder(model=args.object_model)
+    tracker = ObjectTracking()
+    manual_read = False
     find_requested = False
+    track_requested = False
     pending_found = None
     last_result_text = ''
     found_view = OCRView('ThirdEyes - Tìm vật (ảnh chụp)', 'ThirdEyes | Object search snapshot')
@@ -164,35 +169,63 @@ def main(argv=None):
                 snapshot = frames if pair is None else replace(frames, rgb=pair.rgb, depth_mm=pair.depth_mm,
                     color_timestamp_ms=pair.color_ms, depth_timestamp_ms=pair.depth_ms, color_received_at=pair.received_at)
                 return reader.request(snapshot, now, pair=pair, mapper=mapper)
-            def request_find(target=None):
+            def request_find(target=None, quiet=False):
                 if reader.busy or finder.busy:
                     return False
-                audio.stop_speech()
+                if not quiet:
+                    audio.stop_speech()
                 snapshot = frames if pair is None else replace(frames, rgb=pair.rgb, depth_mm=pair.depth_mm,
                     color_received_at=pair.received_at, color_timestamp_ms=pair.color_ms, depth_timestamp_ms=pair.depth_ms)
                 target = target or (panel.target.get() if panel else args.find_target)
                 return finder.find(snapshot, target, now, pair, mapper)
+            def start_tracking(target):
+                finder.cancel()
+                audio.stop_speech()
+                tracker.start(target, now)
+                finder.tracking_active = True
             observation = depth_processor.process(frames, now)
             report = detector.process(observation)
             audio.process(report, now)
             if recorder:
                 recorder.record(frames, report, now)
             if not greeted and not voice.listening and audio.speech is not None and audio.speech.state == 'ready':
-                greeted = audio.read_text('ThirdEyes sẵn sàng. Bấm V, chờ tín hiệu rồi nói tìm chai nước, tìm điện thoại hoặc đọc văn bản.', now)
+                greeted = audio.read_text('ThirdEyes sẵn sàng', now)
             if args.read_once and not read_requested and frames.rgb is not None:
                 read_requested = request_read()
+            if manual_read and not finder.busy:
+                manual_read = not request_read()
             result = reader.poll()
-            if args.find_once and not find_requested and now - started > 1:
+            if args.track and not track_requested and now - started > 1:
+                start_tracking(args.find_target)
+                track_requested = True
+            if args.find_once and not args.track and not find_requested and now - started > 1:
                 find_requested = request_find()
             found = finder.poll()
             if found is not None:
-                last_result_text = found['speak']
-                pending_found = (found['speak'], now)
-                if panel:
-                    panel.show_result(found, finder.snapshot_rgb)
-                elif not args.headless:
-                    found_view.show(found, finder.snapshot_rgb)
-                logging.info('FIND status=%s target=%s count=%d ms=%s', found['status'], found.get('target_label'), len(found.get('regions', [])), found.get('total_ms'))
+                tracking_result = tracker.active
+                if tracking_result:
+                    found = tracker.update(found, now)
+                if found is not None:
+                    logging.info('FIND tracking=%s target=%s age_ms=%s regions=%s', tracking_result,
+                                 found.get('target_label'), round((now-found.get('frame_received_at', now))*1000),
+                                 [(r.get('clock_hour'), r.get('depth', {}).get('distance_m')) for r in found.get('regions', [])])
+                    last_result_text = found['speak']
+                    if not tracking_result:
+                        pending_found = (found['speak'], now)
+                    if panel:
+                        panel.show_result(found, finder.snapshot_rgb)
+                    elif not args.headless:
+                        found_view.show(found, finder.snapshot_rgb)
+            finder.tracking_active = tracker.active
+            if tracker.active:
+                finder.message = tracker.message
+                if not finder.busy and not reader.busy and tracker.should_request(frames, now):
+                    if request_find(tracker.target, quiet=True):
+                        tracker.submitted(frames, now)
+                    elif finder.status in {'unavailable', 'error'}:
+                        tracker.update({'target_label': tracker.target, 'status': 'error'}, now)
+                finder.message = tracker.message
+            finder.tracking_fresh = tracker.fresh(now)
             if result is not None:
                 last_result_text = result.get('speak', '')
                 pending_found = (last_result_text, now)
@@ -203,6 +236,7 @@ def main(argv=None):
             if pending_found and not voice.listening:
                 if now - pending_found[1] > 10 or audio.read_text(pending_found[0], now):
                     pending_found = None
+            tracker.audio_tick(audio, now, listening=voice.listening or pending_found is not None)
             status = (report.status, tuple((z.zone, z.level, z.known, z.reason, z.suppress_audio) for z in report.zones))
             if status != last_status:
                 logging.info("OBSTACLES status=%s zones=%s", report.status,
@@ -253,19 +287,21 @@ def main(argv=None):
                     args.find_target = target
                     if panel:
                         panel.target.set(target)
-                    if request_find(target):
-                        pending_found = (f'Đang tìm {target.lower()}.', now)
-                    else:
-                        pending_found = ('Chưa thể tìm vật lúc này. Hệ thống đang xử lý hoặc chưa có ảnh mới. Hãy thử lại.', now)
+                    manual_read = False
+                    start_tracking(target)
                 elif action == 'read':
                     pending_found = None
-                    request_read()
+                    tracker.stop(); finder.tracking_active = False
+                    finder.cancel()
+                    manual_read = True
                 elif action == 'find':
                     pending_found = None
-                    request_find()
+                    manual_read = False
+                    start_tracking(panel.target.get() if panel else args.find_target)
                 elif action == 'repeat':
                     pending_found = (last_result_text or 'Chưa có kết quả để đọc lại.', now)
                 elif action == 'cancel':
+                    tracker.stop(); finder.tracking_active = False; manual_read = False
                     finder.cancel(); pending_found = None
                     reader.cancel(); audio.stop_speech()
                 elif action == 'mute':

@@ -8,14 +8,12 @@ COMMANDS = {'đọc văn bản': 'read', 'đọc chữ': 'read', 'đọc lại':
             'dừng đọc': 'cancel', 'dừng lại': 'cancel', 'trạng thái': 'status', 'kiểm tra': 'status'}
 
 ALIASES = {
+    'Xe buýt': ('xe buýt', 'xe bus'),
+    'Máy nướng bánh mì': ('máy nướng bánh mì', 'máy nướng bánh'),
+    'Bồn rửa': ('bồn rửa', 'bồn rửa chén', 'chậu rửa'),
     'Chai nước': ('chai', 'chai nước'),
     'Điện thoại': ('điện thoại', 'điện thoại di động'),
     'Cốc': ('cốc', 'ly', 'ca'),
-    'Laptop': ('laptop', 'máy tính xách tay'),
-    'Chuột máy tính': ('chuột máy tính', 'con chuột'),
-    'Điều khiển': ('điều khiển', 'điều khiển từ xa'),
-    'Ly rượu có chân': ('ly rượu', 'ly rượu có chân'),
-    'Tivi': ('tivi', 'ti vi'),
     'Vali': ('vali', 'va li'),
     'Ghế sofa': ('ghế sô pha', 'sô pha'),
 }
