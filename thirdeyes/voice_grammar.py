@@ -49,7 +49,7 @@ def parse_command(result):
     confidence = [w.get('conf', 0) if isinstance(w, dict) else 0 for w in words]
     if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in confidence):
         return None
-    if min(confidence) < .5 or max(confidence) > 1 or sum(confidence) / len(confidence) < .75:
+    if min(confidence) < .35 or max(confidence) > 1 or sum(confidence) / len(confidence) < .75:
         return None
     # No fuzzy match: uncertain or compound requests must not start a wrong search.
     return VOICE_COMMANDS.get(normalize(text))

@@ -18,7 +18,6 @@ from thirdeyes.contracts import FrameBundle
 
 ROOT = Path(__file__).resolve().parent.parent
 
-
 def read_settings(path):
     data = json.loads(Path(path).read_text(encoding="utf-8-sig"))
     bounds = {"blur_threshold": (0, 1000), "upscale": (1, 3), "min_confidence": (0, 1),

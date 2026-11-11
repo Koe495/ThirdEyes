@@ -325,7 +325,8 @@ class ControlPanel:
             else:
                 self.task_status.configure(fg=TEXT)
             speech = 'Đã tắt' if audio.speech is None else STATES.get(audio.speech.state, 'Chưa sẵn sàng')
-            self.micro_status.configure(text=f"Micro: {STATES.get(voice.state, 'Sẵn sàng')}   ·   Giọng đọc: {speech}", fg=ACCENT if voice.listening else MUTED)
+            voice_status = voice.message if voice.state in {'starting', 'listening', 'result', 'error'} else STATES.get(voice.state, 'Sẵn sàng')
+            self.micro_status.configure(text=f"Micro: {voice_status}   ·   Giọng đọc: {speech}", fg=ACCENT if voice.listening else MUTED)
             if voice.state == 'error':
                 self.micro_status.configure(text='Micro chưa sẵn sàng · Kiểm tra kết nối rồi bấm V để thử lại.', fg=WARNING)
             if audio.player.error:

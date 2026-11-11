@@ -48,6 +48,7 @@ def main(argv=None):
     parser.add_argument("--ocr-models", type=Path, help="Override local OCR models folder")
     parser.add_argument("--read-once", action="store_true", help="Request OCR on the first fresh RGB frame")
     parser.add_argument("--no-speech", action="store_true", help="Disable offline text-to-speech; keep beeps")
+    parser.add_argument("--voice-device", help="Input microphone name for offline voice commands")
     parser.add_argument("--no-flip", action="store_true", help="Keep Kinect SDK native horizontal orientation (diagnostics)")
     parser.add_argument('--no-controls', action='store_true', help='Disable the large-button control window')
     parser.add_argument('--find-target', choices=list(TARGETS), default='Chai nước')
@@ -129,7 +130,7 @@ def main(argv=None):
     found_view = OCRView('ThirdEyes - Tìm vật (ảnh chụp)', 'ThirdEyes | Object search snapshot')
     reader = None
     panel = None
-    voice = VoiceCommands(Path(__file__).resolve().parent.parent)
+    voice = VoiceCommands(Path(__file__).resolve().parent.parent, device=args.voice_device)
     synchronizer = FrameSynchronizer()
     mapper = None if args.demo else KinectRegionMapper(source)
     greeted = False

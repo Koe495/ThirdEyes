@@ -38,6 +38,14 @@ class VoiceObjectTests(unittest.TestCase):
         text = unicodedata.normalize('NFD', '  TÌM   CHAI NƯỚC  ')
         self.assertEqual(parse_command(heard(text)), ('find', 'Chai nước'))
 
+    def test_exact_command_with_one_low_confidence_word_uses_average(self):
+        result = {'text': 'tìm chai nước', 'result': [
+            {'word': 'tìm', 'conf': 1.0},
+            {'word': 'chai', 'conf': .417222},
+            {'word': 'nước', 'conf': .995064},
+        ]}
+        self.assertEqual(parse_command(result), ('find', 'Chai nước'))
+
     def test_uncertain_unknown_or_compound_commands_are_rejected(self):
         for text in ('tìm bút', 'tìm sách', 'tìm máy tính xách tay', 'tìm', 'tìm chìa khóa', 'tìm chai nước và điện thoại', 'không tìm chai nước', '[unk]'):
             self.assertIsNone(parse_command(heard(text)))

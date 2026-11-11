@@ -25,6 +25,10 @@ Mở `run.bat`. Dashboard một cửa sổ gồm tab Trực tiếp và Kết qu�
 
 Kết quả OCR/tìm vật xuất hiện trong tab Kết quả, gồm ảnh chụp và nội dung tiếng Việt. Khung nhận diện thuộc ảnh chụp tại thời điểm yêu cầu, không vẽ lên ảnh camera đang thay đổi. Micro chỉ mở sau thao tác V.
 
+Nếu máy có nhiều micro, có thể chọn micro theo tên khi chạy, ví dụ:
+`.\run.bat --voice-device "Microphone Array (Realtek(R) Audio)"`.
+Log `logs/thirdeyes.log` ghi thiết bị, mức tín hiệu (RMS/peak) mỗi giây và văn bản Vosk nhận dạng; không lưu bản ghi âm.
+
 ## Môi trường đã cài
 
 - `.venv`: Python 3.14, NumPy 2.5.4, OpenCV 5.0 — camera/hiển thị/vật cản.
@@ -77,7 +81,7 @@ OCR thực tế mất vài giây trên CPU. Lần đầu cần nạp model nên 
 
 - `config/obstacles.json`: cấu hình vật cản hiện hành. Xem `docs/OBSTACLE_MODULE.md`.
 - `config/ocr.json`: độ mờ, phóng ảnh, lọc điểm tin cậy, giới hạn số vùng/ký tự, timeout. Xem `docs/OCR_INTEGRATION.md`.
-- `logs/thirdeyes.log`: trạng thái, thời gian và sự kiện; không ghi nội dung chữ nhận dạng.
+- `logs/thirdeyes.log`: trạng thái, thời gian, mức tín hiệu micro và văn bản Vosk nhận dạng; không lưu âm thanh.
 - `logs/ocr_worker.log`: chẩn đoán tiến trình OCR; được ghi mới mỗi lần khởi động worker.
 - `runtime/ocr_jobs`: ảnh và kết quả tạm giữa hai tiến trình. Dọn sau tác vụ, hủy và timeout trong quá trình đóng bình thường; hệ điều hành tắt đột ngột có thể để lại file tạm.
 - Nội dung OCR giữ trong bộ nhớ và cửa sổ kết quả; không tự tải lên dịch vụ bên ngoài.
@@ -302,4 +306,3 @@ Khi cần ghi phiên camera để phân tích, dùng một thư mục mới:
 ```
 
 Lệnh này chủ động lưu ảnh RGB/depth cục bộ; thư mục captures được Git bỏ qua. Kết quả test và các mẫu nhỏ trong README không phải bằng chứng thiết bị đủ an toàn để dẫn đường độc lập.
-
